@@ -9,10 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
+      - name: Set up Python with Node.js 20
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
+        env:
+          NODE_VERSION: 20
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -21,7 +23,7 @@ jobs:
         run: python -m playwright install --with-deps
       - name: Run your tests
         run: |
-          mkdir -p reports test-results
+          mkdir -p test-results
           pytest --tracing=retain-on-failure
       - uses: actions/upload-artifact@v4
         if: '${{ !cancelled() }}'
