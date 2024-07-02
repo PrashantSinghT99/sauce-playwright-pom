@@ -1,5 +1,5 @@
 name: Playwright Tests
-'on':
+on:
   push:
     branches:
       - master
@@ -21,8 +21,8 @@ jobs:
         run: python -m playwright install --with-deps
       - name: Run your tests
         run: |
-          mkdir -p Report test-results
-          pytest --tracing=retain-on-failure --html=Report/reports.html
+          mkdir -p reports test-results
+          pytest --tracing=retain-on-failure --html=reports/reports.html
       - uses: actions/upload-artifact@v4
         if: '${{ !cancelled() }}'
         with:
