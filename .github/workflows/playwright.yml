@@ -22,7 +22,7 @@ jobs:
       - name: Run your tests
         run: |
           mkdir -p reports test-results
-          pytest --tracing=retain-on-failure --html=reports/reports.html
+          pytest --tracing=retain-on-failure
       - uses: actions/upload-artifact@v4
         if: '${{ !cancelled() }}'
         with:
