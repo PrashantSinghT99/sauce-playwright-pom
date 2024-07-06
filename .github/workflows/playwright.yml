@@ -5,7 +5,7 @@ on:
       - master
 jobs:
   test:
-    timeout-minutes: 60
+    timeout-minutes: 50
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
