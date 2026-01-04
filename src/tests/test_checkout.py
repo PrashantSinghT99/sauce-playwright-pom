@@ -1,7 +1,9 @@
+import pytest
 from playwright.sync_api import expect
 from pages.LoginPage import Loginpage
 
 
+@pytest.mark.sanity
 def test_placeorder(setup_teardown):
     page = setup_teardown
     login_page = Loginpage(page)

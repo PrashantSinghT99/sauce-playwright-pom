@@ -1,0 +1,26 @@
+# --- User Requested ---
+logs/
+*.log
+venv/
+.venv/
+session/
+videos/
+
+# --- Makefile / Playwright Outputs ---
+reports/
+screenshots/
+test-results/
+playwright-report/
+
+# --- Python / Pytest Standard ---
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- Environment Variables ---
+.env
+
+# --- VS Code (Optional) ---
+.vscode/

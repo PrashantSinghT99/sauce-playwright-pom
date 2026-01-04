@@ -1,7 +1,9 @@
+import pytest
 from playwright.sync_api import expect
 from pages.LoginPage import Loginpage
 
 
+@pytest.mark.smoke
 def test_logout_standard_user(setup_teardown) -> None:
     page = setup_teardown
     login_page = Loginpage(page)

@@ -1,7 +1,9 @@
+import pytest
 from playwright.sync_api import expect
 from pages.LoginPage import Loginpage
 
 
+@pytest.mark.smoke
 def test_login_standard_user(setup_teardown):
     page = setup_teardown
     login_page = Loginpage(page)
@@ -21,6 +23,7 @@ def test_login_locked_user(setup_teardown):
         "Epic sadface: Sorry, this user has been locked out.")
 
 
+@pytest.mark.sanity
 def test_login_no_user(setup_teardown):
     page = setup_teardown
     login_page = Loginpage(page)
@@ -29,6 +32,7 @@ def test_login_no_user(setup_teardown):
         "Epic sadface: Username is required")
 
 
+@pytest.mark.sanity
 def test_unsafe_redirects(setup_teardown):
     page = setup_teardown
     page.goto("https://www.saucedemo.com/inventory.html")

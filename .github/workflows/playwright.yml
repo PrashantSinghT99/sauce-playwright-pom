@@ -9,24 +9,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python with Node.js 20
+
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
-        env:
-          NODE_VERSION: 20
+
+      # Optional: Install 'uv' for faster execution (Your Makefile prefers it)
+      - name: Install uv
+        run: pip install uv
+
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+        # This runs your Makefile 'install' target, creating the .venv
+        run: make install
+
       - name: Ensure browsers are installed
-        run: python -m playwright install --with-deps
-      - name: Run your tests
-        run: |
-          mkdir -p test-results
-          pytest --tracing=retain-on-failure
+        # IMPORTANT: We must use the python inside the .venv created by 'make install'
+        run: .venv/bin/python -m playwright install --with-deps
+
+      - name: Run tests
+        # This runs 'runner.py -p src' via your Makefile
+        run: make run
+
       - uses: actions/upload-artifact@v4
-        if: '${{ !cancelled() }}'
+        if: ${{ !cancelled() }}
         with:
-          name: playwright-traces
-          path: test-results/
+          name: test-artifacts
+          # Capturing the folders mentioned in your 'clean' target
+          path: |
+            reports/
+            videos/
+            screenshots/
+            logs/

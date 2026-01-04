@@ -1,7 +1,9 @@
+import pytest
 from playwright.sync_api import expect
 from pages.LoginPage import Loginpage
 
 
+@pytest.mark.smoke
 def test_add_to_cart(setup_teardown):
     page = setup_teardown
     login_page = Loginpage(page)
@@ -15,6 +17,7 @@ def test_add_to_cart(setup_teardown):
         product_name)).to_contain_text("Remove")
 
 
+@pytest.mark.sanity
 def test_remove_to_cart(setup_teardown):
     page = setup_teardown
     login_page = Loginpage(page)
