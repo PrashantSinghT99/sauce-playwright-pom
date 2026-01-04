@@ -3,6 +3,18 @@ on:
   push:
     branches:
       - master
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment to ensure specific ordering
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   test:
     timeout-minutes: 50
@@ -15,29 +27,57 @@ jobs:
         with:
           python-version: '3.12'
 
-      # Optional: Install 'uv' for faster execution (Your Makefile prefers it)
       - name: Install uv
         run: pip install uv
 
       - name: Install dependencies
-        # This runs your Makefile 'install' target, creating the .venv
         run: make install
 
       - name: Ensure browsers are installed
-        # IMPORTANT: We must use the python inside the .venv created by 'make install'
         run: .venv/bin/python -m playwright install --with-deps
 
       - name: Run tests
-        # This runs 'runner.py -p src' via your Makefile
         run: make run
+        # IMPORTANT: Ensure your runner generates an index.html inside 'reports/'
 
+      # 1. Upload Report for GitHub Pages
+      # This specifically packages the 'reports' folder for the deploy job
+      - name: Upload Report to Pages
+        if: ${{ !cancelled() }}
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: reports/
+          # Ensure this path matches where your HTML report is generated (e.g. index.html)
+
+      # 2. (Optional) Keep your standard artifact download if you want raw files
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
-          name: test-artifacts
-          # Capturing the folders mentioned in your 'clean' target
+          name: raw-artifacts
           path: |
-            reports/
             videos/
             screenshots/
             logs/
+
+  # 3. New Deploy Job
+  deploy-report:
+    needs: test
+    # Run this job even if tests fail, so we can see the failure report
+    if: ${{ !cancelled() }}
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Add Report Link to Summary
+        # This adds the clickable link to the GitHub Actions Job Summary page
+        run: |
+          echo "### 📊 Test Report Ready" >> $GITHUB_STEP_SUMMARY
+          echo "You can view the full HTML report here:" >> $GITHUB_STEP_SUMMARY
+          echo "👉 [Click Here to View Report](${{ steps.deployment.outputs.page_url }})" >> $GITHUB_STEP_SUMMARY
