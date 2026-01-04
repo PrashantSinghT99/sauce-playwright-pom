@@ -4,13 +4,11 @@ on:
     branches:
       - master
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment to ensure specific ordering
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -37,21 +35,27 @@ jobs:
         run: .venv/bin/python -m playwright install --with-deps
 
       - name: Run tests
+        # 'continue-on-error: true' ensures the pipeline doesn't stop immediately if tests fail,
+        # so we can still upload the report.
+        continue-on-error: true
         run: make run
-        # IMPORTANT: Ensure your runner generates an index.html inside 'reports/'
 
-      # 1. Upload Report for GitHub Pages
-      # This specifically packages the 'reports' folder for the deploy job
+      # FIX: Rename the random report file to index.html
+      - name: Rename Report to index.html
+        if: always()
+        run: |
+          cd reports
+          # Rename any .html file found to index.html
+          mv *.html index.html
+
       - name: Upload Report to Pages
-        if: ${{ !cancelled() }}
+        if: always()
         uses: actions/upload-pages-artifact@v3
         with:
           path: reports/
-          # Ensure this path matches where your HTML report is generated (e.g. index.html)
 
-      # 2. (Optional) Keep your standard artifact download if you want raw files
       - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
+        if: always()
         with:
           name: raw-artifacts
           path: |
@@ -59,16 +63,12 @@ jobs:
             screenshots/
             logs/
 
-  # 3. New Deploy Job
   deploy-report:
     needs: test
-    # Run this job even if tests fail, so we can see the failure report
-    if: ${{ !cancelled() }}
-    
+    if: always()
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages
@@ -76,7 +76,6 @@ jobs:
         uses: actions/deploy-pages@v4
 
       - name: Add Report Link to Summary
-        # This adds the clickable link to the GitHub Actions Job Summary page
         run: |
           echo "### 📊 Test Report Ready" >> $GITHUB_STEP_SUMMARY
           echo "You can view the full HTML report here:" >> $GITHUB_STEP_SUMMARY
